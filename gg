@@ -1,0 +1,73 @@
+#!/bin/bash
+# GoGit'er command line application
+
+#======================================================================
+# Shell options
+#======================================================================
+shopt -s -o errexit     # Fail on error
+shopt -s -o nounset     # Fail on unset variables
+
+#======================================================================
+# Utility functions
+#======================================================================
+# Set the debug variable to be empty
+GGDEBUG=${GGDEBUG:-}
+
+# Debug function - prints the debug messages to the console
+debug()
+{
+    if [[ -n "$GGDEBUG" ]]
+    then
+        echo "debug: $@"
+    fi
+}
+
+# Warning function - prepends the utility name to all arguments
+# and prints them to stderr
+warn()
+{
+    for msg in "$@"
+    do
+        echo "gogiter: $msg" >&2
+    done
+}
+
+# Panic function - aborts and exits with an error
+panic()
+{
+    local exit_code=$1
+    shift
+    warn "$@"
+
+    # Dump stacktrace
+    if [[ -n "$GGDEBUG" ]]
+    then
+        local frame=0
+        while caller $frame
+        do
+            ((frame++))
+        done
+    fi
+
+    exit $exit_code
+}
+
+#======================================================================
+# Module handling
+#======================================================================
+# Root directory - used for loading modules
+GGROOT=$(dirname $(realpath $0))
+
+# Function to import functionality from sub-functions
+ggmod()
+{
+    if [ ! -r "$GGROOT/lib/$1.bash" ]    
+    then
+        panic 1 "Cannot load module '$1'"
+    fi
+}
+
+#======================================================================
+# Command line handling
+#======================================================================
+gg_parse_command_line "$@"
