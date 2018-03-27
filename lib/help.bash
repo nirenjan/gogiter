@@ -24,8 +24,7 @@ gg_help_cli_handler()
         local module=$1
         if gg_cli_module_is_registered $module
         then
-            echo -n "Usage: gg "
-            gg_${module}_cli_usage
+            gg_show_usage $module
             echo
             gg_${module}_cli_help
             echo
@@ -48,6 +47,15 @@ EOM
             gg_${cmd}_cli_help_summary
         done
     fi
+}
+
+# Show usage for a given module
+gg_show_usage()
+{
+    local module=$1
+    debug "Showing usage for module '$module'"
+    echo -n "Usage: gg "
+    gg_${module}_cli_usage
 }
 
 gg_cli_register_module help
