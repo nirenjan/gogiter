@@ -24,10 +24,7 @@ gg_help_cli_handler()
         local module=$1
         if gg_cli_module_is_registered $module
         then
-            gg_show_usage $module
-            echo
-            gg_${module}_cli_help
-            echo
+            gg_show_help $module
         else
             panic 3 "Invalid subcommand '$module' for help"
         fi
@@ -58,4 +55,15 @@ gg_show_usage()
     gg_${module}_cli_usage
 }
 
+# Show detailed help for a given module
+gg_show_help()
+{
+    local module=$1
+    gg_show_usage $module
+    echo
+    gg_${module}_cli_help
+    echo
+
+}
 gg_cli_register_module help
+
