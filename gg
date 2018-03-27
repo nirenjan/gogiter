@@ -8,8 +8,14 @@ shopt -s -o errexit     # Fail on error
 shopt -s -o nounset     # Fail on unset variables
 
 #======================================================================
-# Utility functions
+# Module handling
 #======================================================================
+# Root directory - used for loading modules
+GGROOT=$(dirname $(realpath $0))
+
+# List of imported modules
+GG_MODULES=
+
 # Set the debug variable to be empty
 GGDEBUG=${GGDEBUG:-}
 
@@ -18,54 +24,35 @@ debug()
 {
     if [[ -n "$GGDEBUG" ]]
     then
-        echo "debug: $@"
-    fi
-}
-
-# Warning function - prepends the utility name to all arguments
-# and prints them to stderr
-warn()
-{
-    for msg in "$@"
-    do
-        echo "gogiter: $msg" >&2
-    done
-}
-
-# Panic function - aborts and exits with an error
-panic()
-{
-    local exit_code=$1
-    shift
-    warn "$@"
-
-    # Dump stacktrace
-    if [[ -n "$GGDEBUG" ]]
-    then
-        local frame=0
-        while caller $frame
+        for msg in "$@"
         do
-            ((frame++))
+            # Print it in a colorful format
+            echo -n "$(tput setaf 7)DEBUG: "
+            echo -n "$(tput setaf 2)${BASH_SOURCE[1]#$GGROOT/}"
+            echo -n "$(tput sgr0):"
+            echo -n "$(tput setaf 3)${BASH_LINENO[0]} "
+            echo -n "$(tput sgr0)"
+            echo "$msg"
         done
     fi
-
-    exit $exit_code
 }
-
-#======================================================================
-# Module handling
-#======================================================================
-# Root directory - used for loading modules
-GGROOT=$(dirname $(realpath $0))
 
 # Function to import functionality from sub-functions
 ggmod()
 {
-    if [ ! -r "$GGROOT/lib/$1.bash" ]    
+    local module="$GGROOT/lib/$1.bash"
+    if [[ ! -r "$module" ]]
     then
         panic 1 "Cannot load module '$1'"
     fi
+
+    debug "Adding module '$1'"
+    source "$module"
+    GG_MODULES="$GG_MODULES:$1"
 }
+
+ggmod core  # Must be the first - this module loads all core functionality
+ggmod cli
 
 #======================================================================
 # Command line handling
