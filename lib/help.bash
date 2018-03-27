@@ -41,7 +41,7 @@ Usage: gg <command>
 Supported commands:
 EOM
 
-        echo $GG_CLI_MODULES | sed 's/:/ /g' | while read cmd
+        for cmd in ${GG_CLI_MODULES//:/ }
         do
             printf '    %-20s' $cmd
             gg_${cmd}_cli_help_summary
