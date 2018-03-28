@@ -32,7 +32,7 @@ debug()
             echo -n "$(tput sgr0):"
             echo -n "$(tput setaf 3)${BASH_LINENO[0]} "
             echo -n "$(tput sgr0)"
-            echo "$msg"
+            echo -- "$msg"
         done
     fi
 }
