@@ -55,6 +55,7 @@ ggmod core  # Must be the first - this module loads all core functionality
 ggmod cli
 ggmod help
 ggmod version
+ggmod config
 
 #======================================================================
 # Command line handling
