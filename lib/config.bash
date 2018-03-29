@@ -1,7 +1,7 @@
 # GoGit'er configuration parser
 
 #######################################################################
-# CLI specific functions
+# config CLI specific functions
 #######################################################################
 gg_config_cli_usage()
 {
@@ -127,7 +127,7 @@ gg_config_cli_handler()
         -n|--name-only)
             config_name_only=--name-only
             config_name=${config_name:-dont-care} # Don't overwrite if set
-            config_value=dont-care
+            config_value=${config_name:-dont-care} # Don't overwrite if set
             config_shift=1
             debug "config-parse: $1"
             ;;
