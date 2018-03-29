@@ -199,8 +199,6 @@ The following options are used with --add and --edit actions
     -n, --name                  Set user name
     -e, --email                 Set user email
 
-    -v, --verbose               Makes all actions verbose
-
 NOTE: If no accounts are configured, then GoGit'er will default to
 using the output of \`git config user.name\` and \`git config user.email\`,
 falling back to \`\$USER\` and \`\$USER@<hostname>\` if those are not set.
@@ -219,7 +217,6 @@ gg_account_cli_handler()
     local account_name=
     local account_user=
     local account_email=
-    local account_verbose=
 
     while [[ $# > 0 ]]
     do
@@ -229,6 +226,63 @@ gg_account_cli_handler()
             debug "account-parse: $1"
             gg_show_help account
             return 0
+            ;;
+
+        -a|--add)
+            account_action=add
+            account_user=${account_user:-}
+            account_email=${account_email:-}
+            account_name=${2:-}
+            account_shift=2
+            debug "account-parse: $1 '$account_name'"
+            ;;
+
+        -d|--delete)
+            account_action=delete
+            account_user=${account_user:-dont-care}
+            account_email=${account_email:-dont-care}
+            account_name=${2:-}
+            account_shift=2
+            debug "account-parse: $1 '$account_name'"
+            ;;
+
+        -m|--edit)
+            account_action=edit
+            account_user=${account_user:-}
+            account_email=${account_email:-}
+            account_name=${2:-}
+            account_shift=2
+            debug "account-parse: $1 '$account_name'"
+            ;;
+
+        -u|--use)
+            account_action=use
+            account_user=${account_user:-dont-care}
+            account_email=${account_email:-dont-care}
+            account_name=${2:-}
+            account_shift=2
+            debug "account-parse: $1 '$account_name'"
+            ;;
+
+        -l|--list)
+            account_action=list
+            account_user=${account_user:-dont-care}
+            account_email=${account_email:-dont-care}
+            account_name=dont-care
+            account_shift=1
+            debug "account-parse: $1"
+            ;;
+
+        -n|--name)
+            account_name=${2:-}
+            account_shift=2
+            debug "account-parse: $1 '$account_name'"
+            ;;
+
+        -e|--email)
+            account_email=${2:-}
+            account_shift=2
+            debug "account-parse: $1 '$account_email'"
             ;;
 
         *)
@@ -303,6 +357,55 @@ gg_config()
     esac
 }
 
+# Accounts handler
+gg_account()
+{
+    local account_action=$1
+    local account_name=$2
+    local account_user=$3
+    local account_email=$4
+
+    case "$account_action" in
+    add)
+        debug "account: add '$account_name' '$account_user <$account_email>'"
+        gg_config set "account.$account_name.name" "$account_user" ''
+        gg_config set "account.$account_name.email" "$account_email" ''
+        ;;
+
+    delete)
+        debug "account: delete '$account_name'"
+        gg_config remove-section "account.$account_name" '' '' ''
+        ;;
+
+    edit)
+        debug "account: edit '$account_name'"
+        # Make sure that the account exists
+        local user=$(gg_config get "account.$account_name.name" '' '' || echo)
+        local email=$(gg_config get "account.$account_name.email" '' '' || echo)
+
+        if [[ -z "$user" || -z "$email" ]]
+        then
+            panic 2 "Unknown account: '$account_name'"
+        fi
+            
+        if [[ -n "$account_name" ]]
+        then
+            debug "account: edit '$account_name' set user='$account_user'"
+            gg_config set "account.$account_name.name" "$account_user" ''
+        fi
+
+        if [[ -n "$account_email" ]]
+        then
+            debug "account: edit '$account_name' set email='$account_email'"
+            gg_config set "account.$account_name.email" "$account_email" ''
+        fi
+        ;;
+
+    *)
+        panic 127 "Something went wrong - unknown action '$account_action'"
+        ;;
+    esac
+}
 #######################################################################
 # Configuration defaults
 #######################################################################
