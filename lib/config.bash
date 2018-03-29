@@ -156,14 +156,98 @@ gg_config_cli_handler()
         shift $config_shift
     done
 
-    gg_config_perform_action \
+    gg_config \
         "$config_action" \
         "$config_name" \
         "$config_value" \
         "$config_name_only"
 }
 
-gg_config_perform_action()
+gg_cli_register_module config
+
+#######################################################################
+# account CLI specific functions
+#######################################################################
+gg_account_cli_usage()
+{
+    echo 'account <action> <account-name>'
+}
+
+gg_account_cli_help_summary()
+{
+    echo "Configure GoGit'er accounts"
+}
+
+gg_account_cli_help()
+{
+    cat <<-EOM
+Configure GoGit'er accounts. Accounts are nothing more than a name and
+email address used for Git commits, and are automatically set in a
+local repository after cloning.
+
+Action
+    -a, --add <name>            Add account <name>
+    -d, --delete <name>         Delete account <name>
+    -m, --edit <name>           Edit account <name>
+    -u, --use <name>            Use account in local repository
+    -l, --list                  List all accounts
+    -h, --help                  Show this help text and exit
+
+Additional options
+
+The following options are used with --add and --edit actions
+    -n, --name                  Set user name
+    -e, --email                 Set user email
+
+    -v, --verbose               Makes all actions verbose
+
+NOTE: If no accounts are configured, then GoGit'er will default to
+using the output of \`git config user.name\` and \`git config user.email\`,
+falling back to \`\$USER\` and \`\$USER@<hostname>\` if those are not set.
+EOM
+}
+
+gg_account_cli_handler()
+{
+    if [[ $# == 0 ]]
+    then
+        debug "Show account help"
+        set -- --help
+    fi
+
+    local account_action=
+    local account_name=
+    local account_user=
+    local account_email=
+    local account_verbose=
+
+    while [[ $# > 0 ]]
+    do
+        local account_shift=1
+        case "$1" in
+        -h|--help)
+            debug "account-parse: $1"
+            gg_show_help account
+            return 0
+            ;;
+
+        *)
+            panic 1 "Unrecognized action '$1'"
+            ;;
+        esac
+
+        shift $account_shift
+    done
+
+}
+
+gg_cli_register_module account
+
+#######################################################################
+# Configuration handlers
+#######################################################################
+# Wrapper to git config
+gg_config()
 {
     local config_action=$1
     local config_name=$2
@@ -218,8 +302,6 @@ gg_config_perform_action()
         ;;
     esac
 }
-
-gg_cli_register_module config
 
 #######################################################################
 # Configuration defaults
