@@ -186,13 +186,15 @@ email address used for Git commits, and are automatically set in a
 local repository after cloning.
 
 Action
-    -a, --add <name>            Add account <name>
-    -d, --delete <name>         Delete account <name>
-    -m, --edit <name>           Edit account <name>
-    -u, --use <name>            Use account in local repository
-    -s, --show <name>           Show account <name>
-    -l, --list                  List all accounts
-    -h, --help                  Show this help text and exit
+    add <name>                  Add account <name>
+    delete <name>               Delete account <name>
+    edit <name>                 Edit account <name>
+    use <name>                  Use account in local repository
+    show <name>                 Show account <name>
+    list                        List all accounts
+    set-default <name>          Make account <name> as default
+    get-default                 Return default account
+    -h, --help, help            Show this help text and exit
 
 Additional options
 
@@ -223,13 +225,13 @@ gg_account_cli_handler()
     do
         local account_shift=1
         case "$1" in
-        -h|--help)
+        -h|--help|help)
             debug "account-parse: $1"
             gg_show_help account
             return 0
             ;;
 
-        -a|--add)
+        add)
             account_action=add
             account_user=${account_user:-}
             account_email=${account_email:-}
@@ -238,7 +240,7 @@ gg_account_cli_handler()
             debug "account-parse: $1 '$account_name'"
             ;;
 
-        -d|--delete)
+        delete)
             account_action=delete
             account_user=${account_user:-dont-care}
             account_email=${account_email:-dont-care}
@@ -247,7 +249,7 @@ gg_account_cli_handler()
             debug "account-parse: $1 '$account_name'"
             ;;
 
-        -m|--edit)
+        edit)
             account_action=edit
             account_user=${account_user:-}
             account_email=${account_email:-}
@@ -256,7 +258,7 @@ gg_account_cli_handler()
             debug "account-parse: $1 '$account_name'"
             ;;
 
-        -u|--use)
+        use)
             account_action=use
             account_user=${account_user:-dont-care}
             account_email=${account_email:-dont-care}
@@ -265,7 +267,7 @@ gg_account_cli_handler()
             debug "account-parse: $1 '$account_name'"
             ;;
 
-        -s|--show)
+        show)
             account_action=show
             account_user=${account_user:-dont-care}
             account_email=${account_email:-dont-care}
@@ -274,8 +276,26 @@ gg_account_cli_handler()
             debug "account-parse: $1 '$account_name'"
             ;;
 
-        -l|--list)
+        list)
             account_action=list
+            account_user=${account_user:-dont-care}
+            account_email=${account_email:-dont-care}
+            account_name=dont-care
+            account_shift=1
+            debug "account-parse: $1"
+            ;;
+
+        set-default)
+            account_action=set-default
+            account_user=${account_user:-dont-care}
+            account_email=${account_email:-dont-care}
+            account_name=${2:-}
+            account_shift=2
+            debug "account-parse: $1 '$account_name'"
+            ;;
+
+        get-default)
+            account_action=get-default
             account_user=${account_user:-dont-care}
             account_email=${account_email:-dont-care}
             account_name=dont-care
@@ -438,10 +458,20 @@ gg_account()
     list)
         debug "account: list"
         gg_config get-regexp '^account\.' '' --name-only | \
-            sed 's/^account.//; s/\..*$//' | \
-            sort -u
+            sed 's/^account.//; s/\..*$//' |\
+            uniq
         ;;
 
+    set-default)
+        debug "account: set-default '$account_name'"
+        gg_account_validate "$account_name"
+        gg_config set 'default.account' "$account_name" '' 
+        ;;
+
+    get-default)
+        debug "account: get-default"
+        gg_config_default_account
+        ;;
     *)
         panic 127 "Something went wrong - unknown action '$account_action'"
         ;;
