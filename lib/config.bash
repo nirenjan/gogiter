@@ -323,7 +323,8 @@ gg_config()
     local config_value=$3
     local config_name_only=$4
 
-    local ggconfig="git config -f $HOME/.ggconfig"
+    GGCONFIG=${GGCONFIG:-$HOME/.ggconfig}
+    local ggconfig="git config -f $GGCONFIG"
 
     case "$config_action" in
     get)
