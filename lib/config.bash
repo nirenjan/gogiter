@@ -487,4 +487,40 @@ gg_account_validate()
 #######################################################################
 # Configuration defaults
 #######################################################################
+# Default transport
+gg_config_default_transport()
+{
+    gg_config get 'default.transport' '' '' || echo 'ssh'
+}
 
+# Default account
+gg_config_default_account()
+{
+    local def_acc=$(gg_config get 'default.account' '' '')
+    local create_def_acc=
+
+    if [[ -n "$def_acc" ]]
+    then
+        if gg_account_validate "$def_acc" --no-panic
+        then
+            echo "$def_acc"
+            return 0
+        fi
+    fi
+
+    debug "default-account: searching list of accounts"
+    local first_acc=$(gg_account list '' '' '' | head -n1)
+    if [[ -z "$first_acc" ]]
+    then
+        # Create default account
+        local user=$(git config user.name || echo $USER)
+        local email=$(git config user.email || echo "$USER@$(hostname)")
+
+        first_acc=default
+        debug "default-account: adding default account $user <$email>"
+        gg_account add "$first_acc" "$user" "$email"
+    fi
+
+    debug "default-account: setting default account = $first_acc"
+    gg_config set 'default.account' "$first_acc" ''
+}
