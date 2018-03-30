@@ -523,4 +523,7 @@ gg_config_default_account()
 
     debug "default-account: setting default account = $first_acc"
     gg_config set 'default.account' "$first_acc" ''
+
+    echo "$first_acc"
+    return 0
 }
