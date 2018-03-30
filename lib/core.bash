@@ -31,6 +31,11 @@ colorize_stackframe()
     local func=$2
     local file=${3#$GGROOT/}
 
+    if [[ "$file" == "$0" ]]
+    then
+        file=$(basename $0)
+    fi
+
     echo -ne "\t$(tput setaf 2)$file$(tput sgr0):$(tput setaf 3)$lineno "
     echo -e "\t$(tput sgr0)$func"
     return 0
