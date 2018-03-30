@@ -472,6 +472,11 @@ gg_account_validate()
 
     if [[ -z "$user" || -z "$email" ]]
     then
+        # Panic is controlled by the second argument
+        if [[ "${2:-}" == --no-panic ]]
+        then
+            return 1
+        fi
         panic 2 "Unknown account: '$account_name'"
     fi
 
