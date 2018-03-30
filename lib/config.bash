@@ -190,6 +190,7 @@ Action
     -d, --delete <name>         Delete account <name>
     -m, --edit <name>           Edit account <name>
     -u, --use <name>            Use account in local repository
+    -s, --show <name>           Show account <name>
     -l, --list                  List all accounts
     -h, --help                  Show this help text and exit
 
@@ -264,6 +265,15 @@ gg_account_cli_handler()
             debug "account-parse: $1 '$account_name'"
             ;;
 
+        -s|--show)
+            account_action=show
+            account_user=${account_user:-dont-care}
+            account_email=${account_email:-dont-care}
+            account_name=${2:-}
+            account_shift=2
+            debug "account-parse: $1 '$account_name'"
+            ;;
+
         -l|--list)
             account_action=list
             account_user=${account_user:-dont-care}
@@ -274,7 +284,7 @@ gg_account_cli_handler()
             ;;
 
         -n|--name)
-            account_name=${2:-}
+            account_user=${2:-}
             account_shift=2
             debug "account-parse: $1 '$account_name'"
             ;;
@@ -293,6 +303,11 @@ gg_account_cli_handler()
         shift $account_shift
     done
 
+    gg_account \
+        "$account_action" \
+        "$account_name" \
+        "$account_user" \
+        "$account_email"
 }
 
 gg_cli_register_module account
@@ -368,27 +383,26 @@ gg_account()
     case "$account_action" in
     add)
         debug "account: add '$account_name' '$account_user <$account_email>'"
+        if [[ -z "$account_user" || -z "$account_email" ]]
+        then
+            panic 2 "Must specify both user and email for adding account"
+        fi
+
         gg_config set "account.$account_name.name" "$account_user" ''
         gg_config set "account.$account_name.email" "$account_email" ''
         ;;
 
     delete)
         debug "account: delete '$account_name'"
+        gg_account_validate "$account_name"
         gg_config remove-section "account.$account_name" '' '' ''
         ;;
 
     edit)
         debug "account: edit '$account_name'"
-        # Make sure that the account exists
-        local user=$(gg_config get "account.$account_name.name" '' '' || echo)
-        local email=$(gg_config get "account.$account_name.email" '' '' || echo)
-
-        if [[ -z "$user" || -z "$email" ]]
-        then
-            panic 2 "Unknown account: '$account_name'"
-        fi
+        gg_account_validate "$account_name"
             
-        if [[ -n "$account_name" ]]
+        if [[ -n "$account_user" ]]
         then
             debug "account: edit '$account_name' set user='$account_user'"
             gg_config set "account.$account_name.name" "$account_user" ''
@@ -401,11 +415,69 @@ gg_account()
         fi
         ;;
 
+    use)
+        debug "account: use '$account_name'"
+        gg_account_validate "$account_name"
+        local user=$(gg_account_get_user "$account_name")
+        local email=$(gg_account_get_email "$account_name")
+        debug "account: configuring local user as '$user'"
+        git config --local user.name "$user"
+        debug "account: configuring local email as '$email'"
+        git config --local user.email "$email"
+        ;;
+
+    show)
+        debug "account: show '$account_name'"
+        gg_account_validate "$account_name"
+        echo "Account: $account_name"
+        echo "    Name:   $(gg_account_get_user "$account_name")"
+        echo "    Email:  $(gg_account_get_email "$account_name")"
+        ;;
+
+    list)
+        debug "account: list"
+        gg_config get-regexp '^account\.' '' --name-only | \
+            sed 's/^account.//; s/\..*$//' | \
+            sort -u
+        ;;
+
     *)
         panic 127 "Something went wrong - unknown action '$account_action'"
         ;;
     esac
 }
+
+# Get account username
+gg_account_get_user()
+{
+    local account_name=$1
+    debug "account: get-user($account_name)"
+    gg_config get "account.$account_name.name" '' '' || echo
+}
+
+# Get account email
+gg_account_get_email()
+{
+    local account_name=$1
+    debug "account: get-email($account_name)"
+    gg_config get "account.$account_name.email" '' '' || echo
+}
+
+# Validate account
+gg_account_validate()
+{
+    local account_name=$1
+    local user=$(gg_account_get_user $account_name)
+    local email=$(gg_account_get_email $account_name)
+
+    if [[ -z "$user" || -z "$email" ]]
+    then
+        panic 2 "Unknown account: '$account_name'"
+    fi
+
+    return 0
+}
+
 #######################################################################
 # Configuration defaults
 #######################################################################
