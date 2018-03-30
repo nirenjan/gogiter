@@ -333,6 +333,87 @@ gg_account_cli_handler()
 gg_cli_register_module account
 
 #######################################################################
+# service CLI specific functions
+#######################################################################
+gg_service_cli_usage()
+{
+    echo 'service <action> <service-name>'
+}
+
+gg_service_cli_help_summary()
+{
+    echo "Configure GoGit'er services"
+}
+
+gg_service_cli_help()
+{
+    cat <<-EOM
+Configure GoGit'er services. Services are tied to a service provider
+and are used to configure the remotes, user IDs, etc.
+
+Action
+    add <name>                  Add service <name>
+    delete <name>               Delete service <name>
+    edit <name>                 Edit service <name>
+    show <name>                 Show service <name>
+    list                        List all services
+    -h, --help, help            Show this help text and exit
+
+Additional options
+
+The following options are used with add and edit actions
+    -p, --provider <id>         Make service use provider <id>
+    -i, --id <id>               Use <id> as the default username
+    -t, --transport <spec>      Configure transport using <spec>
+    -a, --account <account>     Use <account> as default
+
+NOTE: If no services are configured, then GoGit'er will default to
+creating a service with provider \`github\` and id \'\$USER\`.
+Transport and account will be taken from the defaults
+EOM
+}
+
+gg_service_cli_handler()
+{
+    if [[ $# == 0 ]]
+    then
+        debug "Show service help"
+        set -- --help
+    fi
+
+    local service_action=
+    local service_name=
+    local service_user=
+    local service_email=
+
+    while [[ $# > 0 ]]
+    do
+        local service_shift=1
+        case "$1" in
+        -h|--help|help)
+            debug "service-parse: $1"
+            gg_show_help service
+            return 0
+            ;;
+
+        *)
+            panic 1 "Unrecognized action '$1'"
+            ;;
+        esac
+
+        shift $service_shift
+    done
+
+    gg_service \
+        "$service_action" \
+        "$service_name" \
+        "$service_user" \
+        "$service_email"
+}
+
+gg_cli_register_module service
+
+#######################################################################
 # Configuration handlers
 #######################################################################
 # Wrapper to git config
