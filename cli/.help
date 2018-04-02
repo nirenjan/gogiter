@@ -1,0 +1,4 @@
+GoGit'er is a command line frontend to various Git hosting services. It
+can clone a repo, create branches, merge them and much more.
+
+Supported commands:

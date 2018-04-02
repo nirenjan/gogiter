@@ -1,0 +1,123 @@
+#!/bin/bash
+# GoGit'er configuration parser
+
+gg_cli_command_handler()
+{
+    if [[ $# == 0 ]]
+    then
+        debug "Show config help"
+        set -- --help
+    fi
+
+    local config_action=
+    local config_name=
+    local config_value=
+    local config_name_only=
+
+    while [[ $# > 0 ]]
+    do
+        local config_shift=1
+        case "$1" in
+        -g|--get)
+            config_action=get
+            config_name=${2:-}
+            config_value=dont-care
+            config_shift=2
+            debug "config-parse: $1 '$config_name'"
+            ;;
+
+        -x|--get-regexp)
+            config_action=get-regexp
+            config_name=${2:-}
+            config_value=dont-care
+            config_shift=2
+            debug "config-parse: $1 '$config_name'"
+            ;;
+
+        -s|--set)
+            config_action=set
+            config_name=${2:-}
+            config_value=${3:-}
+            config_shift=3
+            debug "config-parse: $1 '$config_name'='$config_value'"
+            ;;
+
+        -u|--unset)
+            config_action=unset
+            config_name=${2:-}
+            config_value=dont-care
+            config_shift=2
+            debug "config-parse: $1 '$config_name'"
+            ;;
+
+        -l|--list)
+            config_action=list
+            config_name=dont-care
+            config_value=dont-care
+            config_shift=1
+            debug "config-parse: $1"
+            ;;
+
+        -e|--edit)
+            config_action=edit
+            config_name=dont-care
+            config_value=dont-care
+            config_shift=1
+            debug "config-parse: $1"
+            ;;
+
+        -r|--remove-section)
+            config_action=remove-section
+            config_name=${2:-}
+            config_value=dont-care
+            config_shift=2
+            debug "config-parse: $1 '$config_name'"
+            ;;
+
+        -m|--rename-section)
+            config_action=rename-section
+            config_name=${2:-}
+            config_value=${3:-}
+            config_shift=3
+            debug "config-parse: $1 '$config_name' -> '$config_value'"
+            ;;
+
+        -n|--name-only)
+            config_name_only=--name-only
+            config_name=${config_name:-dont-care} # Don't overwrite if set
+            config_value=${config_name:-dont-care} # Don't overwrite if set
+            config_shift=1
+            debug "config-parse: $1"
+            ;;
+
+        -h|--help)
+            debug "config-parse: $1"
+            gg_cli_display_help
+            return 0
+            ;;
+
+        *)
+            panic 1 "Unrecognized action '$1'"
+            ;;
+        esac
+
+        if [[ -z "$config_name" ]]
+        then
+            panic 1 "Missing name for $1"
+        fi
+
+        if [[ -z "$config_value" ]]
+        then
+            panic 1 "Missing value for $1"
+        fi
+
+        shift $config_shift
+    done
+
+    gg_config \
+        "$config_action" \
+        "$config_name" \
+        "$config_value" \
+        "$config_name_only"
+}
+

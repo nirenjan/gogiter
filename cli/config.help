@@ -1,0 +1,24 @@
+Configure GoGit'er parameters. If multiple actions are specified, only
+the last action is executed.
+
+Action
+    -g, --get <name>            Get value of <name>
+    -x, --get-regexp <regex>    Get values of variables matching <regex>
+    -s, --set <name> <value>    Set <name> = <value>
+    -u, --unset <name>          Remove <name>
+    -l, --list                  List all parameters
+    -e, --edit                  Open an editor
+    -r, --remove-section <name> Remove section <name>
+    -m, --rename-section <old_name> <new_name>
+                                Rename section <old_name> to <new_name>
+    -n, --name-only             Show parameter names only - only used
+                                with --list and --get-regexp
+    -h, --help                  Show this help text and exit
+
+Section Types
+    account                     Account name and email
+    service                     Service information
+
+Sections
+    default                     GoGit'er defaults
+    alias                       Aliases for service names
