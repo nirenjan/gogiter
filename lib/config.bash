@@ -290,7 +290,7 @@ gg_config()
 
     edit)
         debug "config: edit"
-        ${EDITOR:-vi} ~/.ggconfig
+        ${EDITOR:-vi} "$GGCONFIG"
         ;;
 
     remove-section)
