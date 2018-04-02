@@ -19,7 +19,7 @@ gg_config()
         debug "config: get '$config_name'"
         $ggconfig --get "$config_name"
         ;;
-        
+
     get-regexp)
         debug "config: get-regexp '$config_name' $config_name_only"
         $ggconfig $config_name_only --get-regexp "$config_name"
@@ -90,7 +90,7 @@ gg_account()
     edit)
         debug "account: edit '$account_name'"
         gg_account_validate "$account_name"
-            
+
         if [[ -n "$account_user" ]]
         then
             debug "account: edit '$account_name' set user='$account_user'"
@@ -133,7 +133,7 @@ gg_account()
     set-default)
         debug "account: set-default '$account_name'"
         gg_account_validate "$account_name"
-        gg_config set 'default.account' "$account_name" '' 
+        gg_config set 'default.account' "$account_name" ''
         ;;
 
     get-default)
@@ -180,6 +180,105 @@ gg_account_validate()
     fi
 
     return 0
+}
+
+# Service handler
+gg_service()
+{
+    local service_action=$1
+    local service_name=$2
+    local service_provider=$3
+    local service_id=$4
+    local service_transport=$5
+    local service_prefix=$6
+    local service_account=$7
+
+    case "$service_action" in
+    add)
+        debug "service: add ${service_name}"
+        if [[ -z "$service_provider" || -z "${service_id}" ]]
+        then
+            panic 2 "Must specify both provider and ID for adding service"
+        fi
+
+        gg_config set "service.${service_name}.provider" "$service_provider" ''
+        gg_config set "service.${service_name}.id" "$service_id" ''
+
+        if [[ -z "$service_transport" ]]
+        then
+            # TODO: Add handling for querying transport from provider plugin
+            :
+        fi
+
+        if [[ -n "$service_account" ]]
+        then
+            gg_config set "service.${service_name}.account" "$service_account" ''
+        fi
+        ;;
+
+    delete)
+        debug "service: delete '${service_name}'"
+        gg_config remove-section "service.${service_name}" '' '' ''
+        ;;
+
+    edit)
+        debug "service: edit '${service_name}'"
+
+        if [[ -n "$service_provider" ]]
+        then
+            debug "service: edit '$service_name' set provider='${service_provider}'"
+            gg_config set "service.$service_name.provider" "$service_provider" ''
+        fi
+
+        if [[ -n "$service_id" ]]
+        then
+            debug "service: edit '$service_name' set id='${service_id}'"
+            gg_config set "service.$service_name.id" "$service_id" ''
+        fi
+
+        if [[ -n "$service_transport" ]]
+        then
+            debug "service: edit '$service_name' set '$service_transport'='${service_prefix}'"
+            gg_config set "service.$service_name.$service_transport" "$service_prefix" ''
+        fi
+
+        if [[ -n "$service_account" ]]
+        then
+            debug "service: edit '$service_name' set account='${service_account}'"
+            gg_config set "service.$service_name.account" "$service_account" ''
+        fi
+
+        ;;
+
+    show)
+        debug "service: show '$service_name'"
+        # TODO: Validate service name
+        gg_config get-regexp "^service\.${service_name}\." '' ''
+        ;;
+
+    list)
+        debug "service: list"
+        gg_config get-regexp '^service\.' '' --name-only | \
+            sed 's/^service.//; s/\..*$//' | \
+            uniq
+        ;;
+
+    set-default)
+        debug "service: set-default '$service_name'"
+        # TODO: Validate service name
+        gg_config set 'default.service' "$service_name" ''
+        ;;
+
+    get-default)
+        debug "service: get-default"
+        # TODO: Implement default service handling
+        gg_config get 'default.service' '' ''
+        ;;
+
+    *)
+        panic 127 "Something went wrong - unknown action '$service_action'"
+        ;;
+    esac
 }
 
 #######################################################################

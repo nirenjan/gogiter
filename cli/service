@@ -11,8 +11,11 @@ gg_cli_command_handler()
 
     local service_action=
     local service_name=
-    local service_user=
-    local service_email=
+    local service_provider=
+    local service_id=
+    local service_transport=
+    local service_prefix=
+    local service_account=$(gg_config_default_account)
 
     while [[ $# > 0 ]]
     do
@@ -22,6 +25,66 @@ gg_cli_command_handler()
             debug "service-parse: $1"
             gg_cli_display_help
             return 0
+            ;;
+
+        --add|--delete|--edit|--show|--set-default)
+            service_action=${1#--}
+            service_name=${2:-}
+            service_shift=2
+            debug "service-parse: $1 '$service_name'"
+            ;;
+
+        --list|--get-default)
+            service_action=${1#--}
+            service_name=dont-care
+            service_shift=1
+            debug "service-parse: $1"
+            ;;
+
+        -p|--provider)
+            service_provider=${2:-}
+            if [[ -z "$service_provider" ]]
+            then
+                panic 1 "Missing argument for $1"
+            fi
+            service_shift=2
+            debug "service-parse: $1 '$service_provider'"
+            ;;
+
+        -i|--id)
+            service_id=${2:-}
+            if [[ -z "$service_id" ]]
+            then
+                panic 1 "Missing argument for $1"
+            fi
+            service_shift=2
+            debug "service-parse: $1 '$service_id'"
+            ;;
+
+        -a|--account)
+            service_account=${2:-}
+            if [[ -z "$service_account" ]]
+            then
+                panic 1 "Missing argument for $1"
+            fi
+            gg_account_validate "$service_account"
+            service_shift=2
+            debug "service-parse: $1 '$service_account'"
+            ;;
+
+        -t|--transport)
+            service_transport=${2:-}
+            if [[ -z "$service_transport" ]]
+            then
+                panic 1 "Missing transport type for $1"
+            fi
+            service_prefix=${3:-}
+            if [[ -z "$service_prefix" ]]
+            then
+                panic 1 "Missing transport prefix for $1"
+            fi
+            service_shift=3
+            debug "service-parse: $1 '$service_transport' '$service_prefix'"
             ;;
 
         *)
@@ -35,7 +98,10 @@ gg_cli_command_handler()
     gg_service \
         "$service_action" \
         "$service_name" \
-        "$service_user" \
-        "$service_email"
+        "$service_provider" \
+        "$service_id" \
+        "$service_transport" \
+        "$service_prefix" \
+        "$service_account"
 }
 

@@ -7,6 +7,8 @@ Action
     --edit <name>               Edit service <name>
     --show <name>               Show service <name>
     --list                      List all services
+    --set-default <name>        Make service <name> as default
+    --get-default               Return default service
     -h, --help, help            Show this help text and exit
 
 Additional options
@@ -17,6 +19,20 @@ The following options are used with add and edit actions
     -t, --transport <spec>      Configure transport using <spec>
     -a, --account <account>     Use <account> as default
 
+Transport Specifier
+
+The transport specifier is given as a key value pair to the --transport
+option. This is used to configure the given provider to use a specific
+server for the remote.
+
+The specifier key is one of git, ssh or https, and the value is the
+corresponding prefix to use. Eg. 'ssh git@github.com:'. This will be
+used when cloning a repository, i.e., `gg clone github:foo/bar.git`
+will translate to `git clone git@github.com:foo/bar.git`
+
+Only one transport specifier is accepted on the command line. To add
+additional specifiers, use the --transport option with the --edit action.
+
 NOTE: If no services are configured, then GoGit'er will default to
-creating a service with provider \`github\` and id \'\$USER\`.
+creating a service with provider `github` and id `$USER`.
 Transport and account will be taken from the defaults
