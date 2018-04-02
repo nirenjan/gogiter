@@ -40,6 +40,16 @@ gg_parse_command_line()
             panic 1 "Unknown command '${command/ /}'"
         fi
 
+        # If the command exists, break out of command processing
+        if [[ -f "$cmdpath" ]]
+        then
+            debug "Command handler exists at '$cmdpath'"
+            shift
+
+            debug "Breaking out of command processing"
+            break
+        fi
+
         shift
     done
 
