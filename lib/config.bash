@@ -430,22 +430,22 @@ gg_config()
     case "$config_action" in
     get)
         debug "config: get '$config_name'"
-        $ggconfig --get $config_name
+        $ggconfig --get "$config_name"
         ;;
         
     get-regexp)
         debug "config: get-regexp '$config_name' $config_name_only"
-        $ggconfig $config_name_only --get-regexp $config_name
+        $ggconfig $config_name_only --get-regexp "$config_name"
         ;;
 
     set)
         debug "config: set '$config_name'='$config_value'"
-        $ggconfig $config_name $config_value
+        $ggconfig "$config_name" "$config_value"
         ;;
 
     unset)
         debug "config: unset '$config_name'"
-        $ggconfig --unset $config_name
+        $ggconfig --unset "$config_name"
         ;;
 
     list)
@@ -460,12 +460,12 @@ gg_config()
 
     remove-section)
         debug "config: remove-section '$config_name'"
-        $ggconfig --remove-section $config_name
+        $ggconfig --remove-section "$config_name"
         ;;
 
     rename-section)
         debug "config: rename-section '$config_name' -> '$config_value'"
-        $ggconfig --rename-section $config_name $config_value
+        $ggconfig --rename-section "$config_name" "$config_value"
         ;;
 
     *)
