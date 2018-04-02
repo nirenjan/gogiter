@@ -1,0 +1,41 @@
+#!/bin/bash
+# GoGit'er service parser
+
+gg_cli_command_handler()
+{
+    if [[ $# == 0 ]]
+    then
+        debug "Show service help"
+        set -- --help
+    fi
+
+    local service_action=
+    local service_name=
+    local service_user=
+    local service_email=
+
+    while [[ $# > 0 ]]
+    do
+        local service_shift=1
+        case "$1" in
+        -h|--help|help)
+            debug "service-parse: $1"
+            gg_cli_display_help
+            return 0
+            ;;
+
+        *)
+            panic 1 "Unrecognized action '$1'"
+            ;;
+        esac
+
+        shift $service_shift
+    done
+
+    gg_service \
+        "$service_action" \
+        "$service_name" \
+        "$service_user" \
+        "$service_email"
+}
+
