@@ -224,9 +224,6 @@ gg_service()
             panic 2 "Must specify both provider and ID for adding service"
         fi
 
-        gg_config set "service.${service_name}.provider" "$service_provider" ''
-        gg_config set "service.${service_name}.id" "$service_id" ''
-
         gg_provider_load "$service_provider" 
 
         if [[ -n "$service_transport" ]]
@@ -251,6 +248,9 @@ gg_service()
                 panic 1 "Must specify transport for provider $service_provider"
             fi
         fi
+
+        gg_config set "service.${service_name}.provider" "$service_provider" ''
+        gg_config set "service.${service_name}.id" "$service_id" ''
 
         if [[ -n "$service_account" ]]
         then
