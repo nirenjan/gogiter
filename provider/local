@@ -1,0 +1,7 @@
+#!/bin/bash
+# Provider configuration for local repository
+
+# Prefixes are deliberately left empty
+GG_PROVIDER_PREFIX_SSH=
+GG_PROVIDER_PREFIX_HTTP=
+GG_PROVIDER_PREFIX_GIT=

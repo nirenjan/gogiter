@@ -1,0 +1,6 @@
+#!/bin/bash
+# Provider configuration for GitHub
+
+GG_PROVIDER_PREFIX_SSH='git@github.com:'
+GG_PROVIDER_PREFIX_HTTP='https://github.com/'
+GG_PROVIDER_PREFIX_GIT='git://github.com/'

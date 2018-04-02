@@ -182,6 +182,29 @@ gg_account_validate()
     return 0
 }
 
+# Validate service
+gg_service_validate()
+{
+    local service_name=$1
+
+    debug "service: get-provider($service_name)"
+    local provider=$(gg_config get "service.$service_name.provider" '' '' || echo)
+    debug "service: get-id($service_name)"
+    local uid=$(gg_config get "service.$service_name.id" '' '' || echo)
+
+    if [[ -z "$provider" || -z "$uid" ]]
+    then
+        # Panic is controlled by the second argument
+        if [[ "${2:-}" == --no-panic ]]
+        then
+            return 1
+        fi
+        panic 2 "Unknown service: '$service_name'"
+    fi
+
+    return 0
+}
+
 # Service handler
 gg_service()
 {
@@ -204,10 +227,29 @@ gg_service()
         gg_config set "service.${service_name}.provider" "$service_provider" ''
         gg_config set "service.${service_name}.id" "$service_id" ''
 
-        if [[ -z "$service_transport" ]]
+        gg_provider_load "$service_provider" 
+
+        if [[ -n "$service_transport" ]]
         then
-            # TODO: Add handling for querying transport from provider plugin
-            :
+            # Transport has been specified
+            debug "service: transport '$service_transport'='$service_prefix'"
+            gg_provider_validate_transport "$service_transport"
+            gg_config set \
+                "service.${service_name}.${service_transport}" \
+                "${service_prefix}" ''
+
+        else
+            # Use default transport
+            debug "service: default transport"
+            service_transport=$(gg_config_default_transport)
+            gg_provider_validate_transport "$service_transport"
+            service_prefix=$(gg_provider_prefix "$service_transport")
+            debug "service: transport '$service_transport'='$service_prefix'"
+
+            if [[ -z "$service_prefix" ]]
+            then
+                panic 1 "Must specify transport for provider $service_provider"
+            fi
         fi
 
         if [[ -n "$service_account" ]]
@@ -252,7 +294,7 @@ gg_service()
 
     show)
         debug "service: show '$service_name'"
-        # TODO: Validate service name
+        gg_service_validate "$service_name"
         gg_config get-regexp "^service\.${service_name}\." '' ''
         ;;
 
@@ -265,14 +307,13 @@ gg_service()
 
     set-default)
         debug "service: set-default '$service_name'"
-        # TODO: Validate service name
+        gg_service_validate "$service_name"
         gg_config set 'default.service' "$service_name" ''
         ;;
 
     get-default)
         debug "service: get-default"
-        # TODO: Implement default service handling
-        gg_config get 'default.service' '' ''
+        gg_config_default_service
         ;;
 
     *)
@@ -322,5 +363,37 @@ gg_config_default_account()
     gg_config set 'default.account' "$first_acc" ''
 
     echo "$first_acc"
+    return 0
+}
+
+# Default service
+gg_config_default_service()
+{
+    local def_srv=$(gg_config get 'default.service' '' '')
+    local create_def_srv=
+
+    if [[ -n "$def_srv" ]]
+    then
+        if gg_service_validate "$def_srv" --no-panic
+        then
+            echo "$def_srv"
+            return 0
+        fi
+    fi
+
+    debug "default-service: searching list of services"
+    local first_srv=$(gg_service list '' '' '' '' '' '' | head -n1)
+    if [[ -z "$first_srv" ]]
+    then
+        # Create default service
+        first_srv=github
+        debug "default-service: adding default service $first_srv"
+        gg_service add "$first_srv" "github" "$USER" '' '' ''
+    fi
+
+    debug "default-service: setting default service = $first_srv"
+    gg_config set 'default.service' "$first_srv" ''
+
+    echo "$first_srv"
     return 0
 }
