@@ -1,0 +1,125 @@
+#!/bin/bash
+# GoGit'er account parser
+
+gg_cli_command_handler()
+{
+    if [[ $# == 0 ]]
+    then
+        debug "Show account help"
+        set -- --help
+    fi
+
+    local account_action=
+    local account_name=
+    local account_user=
+    local account_email=
+
+    while [[ $# > 0 ]]
+    do
+        local account_shift=1
+        case "$1" in
+        -h|--help|help)
+            debug "account-parse: $1"
+            gg_cli_display_help
+            return 0
+            ;;
+
+        --add)
+            account_action=add
+            account_user=${account_user:-}
+            account_email=${account_email:-}
+            account_name=${2:-}
+            account_shift=2
+            debug "account-parse: $1 '$account_name'"
+            ;;
+
+        --delete)
+            account_action=delete
+            account_user=${account_user:-dont-care}
+            account_email=${account_email:-dont-care}
+            account_name=${2:-}
+            account_shift=2
+            debug "account-parse: $1 '$account_name'"
+            ;;
+
+        --edit)
+            account_action=edit
+            account_user=${account_user:-}
+            account_email=${account_email:-}
+            account_name=${2:-}
+            account_shift=2
+            debug "account-parse: $1 '$account_name'"
+            ;;
+
+        --use)
+            account_action=use
+            account_user=${account_user:-dont-care}
+            account_email=${account_email:-dont-care}
+            account_name=${2:-}
+            account_shift=2
+            debug "account-parse: $1 '$account_name'"
+            ;;
+
+        --show)
+            account_action=show
+            account_user=${account_user:-dont-care}
+            account_email=${account_email:-dont-care}
+            account_name=${2:-}
+            account_shift=2
+            debug "account-parse: $1 '$account_name'"
+            ;;
+
+        --list)
+            account_action=list
+            account_user=${account_user:-dont-care}
+            account_email=${account_email:-dont-care}
+            account_name=dont-care
+            account_shift=1
+            debug "account-parse: $1"
+            ;;
+
+        --set-default)
+            account_action=set-default
+            account_user=${account_user:-dont-care}
+            account_email=${account_email:-dont-care}
+            account_name=${2:-}
+            account_shift=2
+            debug "account-parse: $1 '$account_name'"
+            ;;
+
+        --get-default)
+            account_action=get-default
+            account_user=${account_user:-dont-care}
+            account_email=${account_email:-dont-care}
+            account_name=dont-care
+            account_shift=1
+            debug "account-parse: $1"
+            ;;
+
+        -n|--name)
+            account_user=${2:-}
+            account_shift=2
+            debug "account-parse: $1 '$account_user'"
+            ;;
+
+        -e|--email)
+            account_email=${2:-}
+            account_shift=2
+            debug "account-parse: $1 '$account_email'"
+            ;;
+
+        *)
+            panic 1 "Unrecognized action '$1'"
+            ;;
+        esac
+
+        shift $account_shift
+    done
+
+    gg_account \
+        "$account_action" \
+        "$account_name" \
+        "$account_user" \
+        "$account_email"
+}
+

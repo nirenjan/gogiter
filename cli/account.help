@@ -1,0 +1,24 @@
+Configure GoGit'er accounts. Accounts are nothing more than a name and
+email address used for Git commits, and are automatically set in a
+local repository after cloning.
+
+Action
+    --add <name>                Add account <name>
+    --delete <name>             Delete account <name>
+    --edit <name>               Edit account <name>
+    --use <name>                Use account in local repository
+    --show <name>               Show account <name>
+    --list                      List all accounts
+    --set-default <name>        Make account <name> as default
+    --get-default               Return default account
+    -h, --help, help            Show this help text and exit
+
+Additional options
+
+The following options are used with --add and --edit actions
+    -n, --name                  Set user name
+    -e, --email                 Set user email
+
+NOTE: If no accounts are configured, then GoGit'er will default to
+using the output of \`git config user.name\` and \`git config user.email\`,
+falling back to \`\$USER\` and \`\$USER@<hostname>\` if those are not set.
