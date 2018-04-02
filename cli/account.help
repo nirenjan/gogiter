@@ -20,5 +20,5 @@ The following options are used with --add and --edit actions
     -e, --email                 Set user email
 
 NOTE: If no accounts are configured, then GoGit'er will default to
-using the output of \`git config user.name\` and \`git config user.email\`,
-falling back to \`\$USER\` and \`\$USER@<hostname>\` if those are not set.
+using the output of `git config user.name` and `git config user.email`,
+falling back to `$USER` and `$USER@<hostname>` if those are not set.
