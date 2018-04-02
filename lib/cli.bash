@@ -1,11 +1,5 @@
 # GoGit'er Command Line Interface module
 
-# Dummy function - present until all CLIs have transitioned
-gg_cli_register_module()
-{
-:
-}
-
 # Parse the command line
 gg_parse_command_line()
 {
