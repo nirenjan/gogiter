@@ -1,0 +1,17 @@
+#!/bin/bash
+# GoGit'er version command
+
+# Version of GoGit'er
+GGVERSION=0.0.1
+
+gg_cli_command_handler()
+{
+    if [[ $# == 0 ]]
+    then
+        echo "GoGit'er version $GGVERSION"
+        git version
+    else
+        debug "Invalid number of arguments to 'version' command"
+        gg_cli_display_help
+    fi
+}
